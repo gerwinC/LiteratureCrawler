@@ -1,0 +1,7 @@
+/target/
+*.log
+*.log.*
+.classpath
+.project
+.settings/
+config/bhl-api-key.txt

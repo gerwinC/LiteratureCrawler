@@ -1,0 +1,42 @@
+# Configuration for the BIOfid Literature Harvester
+# Created by Adrian Pachzelt & Giuseppe Abrami
+# https://www.biofid.de/en
+
+
+General:
+   # The directory to write all the output
+   output-path: /tmp/productive
+   
+   # Whether to overwrite existing files (true) or not (false)
+   overwrite: true
+   
+   # Delay between requests to an API in milliseconds; Default: 0
+   request-delay: 100
+   
+   # Levels of logging: INFO, FINE, FINER
+   logging-level: INFO
+
+# Configure additional Harvesters below after implementing them.
+# Every Harvester needs to have a unique name. Also, it needs to provide a "class", so
+# the package and the name of the respective Harvester implementation. Everything else
+# that is contained in the configuration is up to the respective implementation and
+# will be handed to the respective Harvester.
+Harvesters:
+- BHL:
+     class: de.biofid.services.crawler.BhlHarvester
+     
+     # Providing the keyword "api-key" will cause the crawler to provide the respective
+     # Harvester to use this key. You may choose to provide a file were the key is stored
+     # as the only value or provide the key directly here instead.
+     api-key: config/bhl-api-key.txt
+     
+     # Overwrites the general overwriting rule for this harvester
+     overwrite: false
+     items:
+        - 1234
+        - 5678
+        
+- Zobodat:
+     class: de.biofid.services.crawler.Zobodat
+     # This crawler is set up to download all texts from Zobodat, when no items are given.
+   
