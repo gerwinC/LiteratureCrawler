@@ -100,6 +100,7 @@ public class BhlHarvester extends Harvester {
 					logger.severe(ex.getLocalizedMessage());
 				}
     		}
+    		listOfItemsToDownload.addAll(itemsExtractedFromTitle);
     	}
     }
 
