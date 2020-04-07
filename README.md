@@ -17,6 +17,9 @@ The tests create a temporary directory at `/tmp/test`. This works on UNIX just f
 ## BHL Harvester
 For the BHL Harvester it is mandatory to provide an BHL API key, which you can request [here](https://www.biodiversitylibrary.org/getapikey.aspx). You can provide this key either directly in the configuration file or only give a path to a file containing only the BHL key.
 
+### Configuration
+The crawler differentiates between single `items` and `collection`. Both can be provided as keywords in the configuration file followed by lists (even only with a single element). While `items` are processed "as is", `collection`s are first resolved to their items and then these items are downloaded. 
+
 ## Custom Harvester
 If you want to harvest another source, you can simply create a custom class extending the [Harvester](https://github.com/FID-Biodiversity/LiteratureCrawler/blob/master/src/main/java/de/biofid/services/crawler/Harvester.java) class and integrating the demanded abstract functions. After also giving it a name and a `class` setting in the configuration file, you should be fine.
 
