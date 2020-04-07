@@ -60,7 +60,7 @@ public class ZobodatHarvester extends Harvester {
 	private Iterator<Metadata> itemMetadataIterator = null;
 	private List<Metadata> itemMetadataList = new ArrayList<>();
 	
-	private List<Object> listOfItemsToDownload;
+	private List<Object> listOfItemsToDownload = new ArrayList<>();
 
 	public ZobodatHarvester(Configuration configuration) throws UnsetHarvesterBaseDirectoryException {
 		super(configuration);
@@ -169,6 +169,8 @@ public class ZobodatHarvester extends Harvester {
 		if (url.isEmpty()) {
 			return 0;
 		}
+		
+		pause();
 		
 		logger.info("Processing URL " + url + "");
 		

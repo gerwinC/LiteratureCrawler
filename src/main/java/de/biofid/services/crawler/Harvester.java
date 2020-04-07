@@ -48,6 +48,10 @@ public abstract class Harvester {
 		setupLogger();
 	}
 	
+	public static void setLoggerLevel(Level loggerLevel) {
+		Harvester.loggerLevel = loggerLevel;
+	}
+	
 	/***
 	 * Set the directory where to write all downloaded data.
 	 */
@@ -55,18 +59,10 @@ public abstract class Harvester {
 		Harvester.baseOutputDirectory = outputDirectory;
 	}
 	
-	public static void setLoggerLevel(Level loggerLevel) {
-		Harvester.loggerLevel = loggerLevel;
-	}
-	
-	public void setRequestDelayInMilliseconds(long millisecondsDelay) {
-		millisecondsDelayBetweenRequests = millisecondsDelay;
-	}
-
 	public final Path getWorkingDirectory() {
 		return Paths.get(baseOutputDirectory, getFolderName().toLowerCase());
 	}
-	
+
 	/***
 	 * This function can be called to start the harvesting of a specific internet source.
 	 * @throws CouldNotCreateDirectoryException
@@ -91,6 +87,10 @@ public abstract class Harvester {
 				break;
 			}
 		}
+	}
+	
+	public void setRequestDelayInMilliseconds(long millisecondsDelay) {
+		millisecondsDelayBetweenRequests = millisecondsDelay;
 	}
 	
 	/***
@@ -120,6 +120,23 @@ public abstract class Harvester {
 	 */
 	protected abstract boolean nextItem(Item item);
 	
+	protected void pause() {
+		try {
+			Thread.sleep(millisecondsDelayBetweenRequests);
+		} catch (InterruptedException ex) {
+			logger.warning(ex.getMessage());
+		}
+	}
+	
+	private boolean createDirectoryIfNotExisting(Path pathToCreate) {
+		File pathFile = pathToCreate.toFile();
+		if (!pathFile.exists()) {
+			return pathFile.mkdirs();
+		} else {
+			return true;
+		}
+	}
+	
 	private boolean createOutputDirectory() throws IOException {
 		Path baseDirectory = getWorkingDirectory();
 		
@@ -140,15 +157,6 @@ public abstract class Harvester {
 		}
 		
 		return true;
-	}
-	
-	private boolean createDirectoryIfNotExisting(Path pathToCreate) {
-		File pathFile = pathToCreate.toFile();
-		if (!pathFile.exists()) {
-			return pathFile.mkdirs();
-		} else {
-			return true;
-		}
 	}
 	
 	private boolean processItem(Item item) {
@@ -189,14 +197,6 @@ public abstract class Harvester {
         // create a TXT formatter
         fileTxt.setFormatter(new SimpleFormatter());
         logger.addHandler(fileTxt);    
-	}
-	
-	private void pause() {
-		try {
-			Thread.sleep(millisecondsDelayBetweenRequests);
-		} catch (InterruptedException ex) {
-			logger.warning(ex.getMessage());
-		}
 	}
 	
 	

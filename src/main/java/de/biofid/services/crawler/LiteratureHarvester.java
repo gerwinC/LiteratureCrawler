@@ -67,7 +67,7 @@ public class LiteratureHarvester {
 	}
 	
 	private Harvester instantiateHarvester(Configuration harvesterConfiguration) {
-		String harvesterName = harvesterConfiguration.getHarvesterName();
+		String harvesterName = harvesterConfiguration.getHarvesterClassName();
 		Constructor<Harvester> harvesterConstructor = null;
 		try {
 			 harvesterConstructor = getHarvesterConstructorForName(harvesterName);

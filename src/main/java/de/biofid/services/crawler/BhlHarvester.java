@@ -69,7 +69,6 @@ public class BhlHarvester extends Harvester {
     private static final String REQUEST_UNAUTHORIZED = "Unauthorized";
     
     private String apiKey;
-    
     private boolean isMetadataCollected = false;
     private Iterator<JSONObject> itemMetadataIterator = null;
     private Set<JSONObject> itemMetadataSet = new HashSet<>();
@@ -352,14 +351,14 @@ public class BhlHarvester extends Harvester {
     
     private void getMetadataOfAllRequestedItems() throws AuthenticationException {
     	for (Object obj : listOfItemsToDownload) {
-			long itemId = (long) obj;
+			long itemId = Long.parseLong(obj.toString());
 			try {
 				JSONObject itemMetadata = getItemMetadata(itemId);
 				logger.fine("Received metadata!");
 				logger.finer("Metadata Set: " + itemMetadata.toString(2));
 				itemMetadataSet.add(itemMetadata);
 			} catch (ItemDoesNotExistException ex) {
-				logger.warning("The requested item (ID " + itemId + " does not exist!");
+				logger.warning("The requested item (ID " + itemId + ") does not exist!");
 			}
 		}
     }

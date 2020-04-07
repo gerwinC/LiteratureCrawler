@@ -130,6 +130,7 @@ public class HarvesterConfigurator {
 			Configuration config = new Configuration(harvesterName, harvesterClassName, jsonConfiguration);
 			config.setHarvesterApiKey(getApiKey(jsonConfiguration));
 			config.setOverwritting(getOverwrittingPolicyForHarvester(jsonConfiguration));
+			config.setRequestDelay(delayBetweenRequestsInMilliseconds);
 			
 			configurations.add(config);
 		}

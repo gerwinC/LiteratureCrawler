@@ -11,11 +11,21 @@ import org.json.JSONObject;
  */
 public class Configuration {
 	
-	private String harvesterName;
-	private String harvesterClassName;
-	private JSONObject jsonConfiguration;
 	private String apiKey = null;
+	private long delayBetweenRequestsInMilliseconds = 0;
+	private String harvesterClassName;
+	private String harvesterName;
 	private boolean isOverwrittingEnabled = true;
+	private JSONObject jsonConfiguration;
+	
+	public Configuration(Configuration conf) {
+		this.harvesterName = conf.harvesterName;
+		this.harvesterClassName = conf.harvesterClassName;
+		this.jsonConfiguration = new JSONObject(conf.jsonConfiguration.toString());
+		this.apiKey = conf.apiKey;
+		this.isOverwrittingEnabled = conf.isOverwrittingEnabled();
+		this.delayBetweenRequestsInMilliseconds = conf.getRequestDelay();
+	}
 	
 	public Configuration(String harvesterName, String harvesterClassName, JSONObject jsonConfiguration) {
 		this.harvesterName = harvesterName;
@@ -23,18 +33,8 @@ public class Configuration {
 		this.jsonConfiguration = jsonConfiguration;
 	}
 	
-	public Configuration(Configuration conf) {
-		this.harvesterName = conf.harvesterName;
-		this.harvesterClassName = conf.harvesterClassName;
-		this.jsonConfiguration = new JSONObject(conf.jsonConfiguration.toString());
-	}
-	
 	public String getHarvesterApiKey() {
 		return apiKey;
-	}
-	
-	public String getHarvesterName() {
-		return harvesterName;
 	}
 	
 	public String getHarvesterClassName() {
@@ -43,6 +43,14 @@ public class Configuration {
 	
 	public JSONObject getHarvesterJsonConfiguration() {
 		return jsonConfiguration;
+	}
+	
+	public String getHarvesterName() {
+		return harvesterName;
+	}
+	
+	public long getRequestDelay() {
+		return delayBetweenRequestsInMilliseconds;
 	}
 	
 	public boolean isOverwrittingEnabled() {
@@ -57,4 +65,7 @@ public class Configuration {
 		this.isOverwrittingEnabled = isOverwrittingEnabled;
 	}
 	
+	public void setRequestDelay(long delayInMilliseconds) {
+		this.delayBetweenRequestsInMilliseconds = delayInMilliseconds;
+	}
 }
