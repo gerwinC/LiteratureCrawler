@@ -80,6 +80,8 @@ public class BhlHarvester extends Harvester {
     	
     	JSONObject jsonConfiguration = configuration.getHarvesterJsonConfiguration();
     	
+    	apiKey = configuration.getHarvesterApiKey();
+    	
     	if (jsonConfiguration.has(CONFIGURATION_ITEM_LIST)) {
     		JSONArray itemListFromConfiguration = jsonConfiguration.getJSONArray(CONFIGURATION_ITEM_LIST);
     		listOfItemsToDownload = itemListFromConfiguration.toList();
@@ -89,7 +91,7 @@ public class BhlHarvester extends Harvester {
     		JSONArray titles = jsonConfiguration.getJSONArray(CONFIGURATION_TITLE_LIST);
     		List<Object> itemsExtractedFromTitle = new ArrayList<>();
     		for (Object titleObj : titles.toList()) {
-    			long titleID = (Long) titleObj;
+    			long titleID = Long.parseLong(titleObj.toString());
     			try {
 					itemsExtractedFromTitle.addAll(getItemsFromTitle(titleID));
 				} catch (ItemDoesNotExistException ex) {
@@ -99,8 +101,6 @@ public class BhlHarvester extends Harvester {
 				}
     		}
     	}
-    	
-    	apiKey = configuration.getHarvesterApiKey();
     }
 
     /***
@@ -247,6 +247,8 @@ public class BhlHarvester extends Harvester {
     public List<Long> getItemsFromTitle(long titleID) 
     		throws AuthenticationException, ItemDoesNotExistException {
     	Map<String, Object> params = new HashMap<>(0);
+    	
+    	logger.info("Resolving items of title ID " + titleID);
 
         params.put(API_KEY, apiKey);
         params.put(FORMAT, JSON_FORMAT);
@@ -274,6 +276,8 @@ public class BhlHarvester extends Harvester {
         catch (WebbException ex) {
     		handleWebbException(ex);
     	}
+        
+        logger.info("Found " + itemsOfTitleList.size() + " items for this title!");
         
         return itemsOfTitleList;
 
