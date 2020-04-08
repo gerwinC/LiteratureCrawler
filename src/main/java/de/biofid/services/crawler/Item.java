@@ -57,6 +57,7 @@ public class Item {
 	
 	private static final Logger logger = Logger.getLogger(Item.class.getName());
 	private static final Level LOGGER_LEVEL = Level.FINE;
+	private static final String LOGGER_FILE = "io.log";
 		
 	private long itemID = -1;
 	private String dataSource = "";
@@ -303,12 +304,13 @@ public class Item {
 	private void setupLogger() {		
 		logger.setLevel(LOGGER_LEVEL);
 		
-		Path loggerOutputDirectoryParentPath = Paths.get(LiteratureHarvester.LOGGER_OUTPUT_FILE).getParent();
-		createDirectoryIfNotExisting(loggerOutputDirectoryParentPath);
+		Path loggerOutputDirectoryPath = Paths.get(LiteratureHarvester.LOGGER_OUTPUT_DIRECTORY_STRING);
+		createDirectoryIfNotExisting(loggerOutputDirectoryPath);
 		
         FileHandler fileTxt;
 		try {
-			fileTxt = new FileHandler(LiteratureHarvester.LOGGER_OUTPUT_FILE);
+			fileTxt = new FileHandler(
+					LiteratureHarvester.LOGGER_OUTPUT_DIRECTORY_STRING + LOGGER_FILE);
 		} catch (SecurityException | IOException e) {
 			logger.warning(Arrays.toString(e.getStackTrace()));
 			return;

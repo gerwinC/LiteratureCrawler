@@ -69,10 +69,8 @@ public class BhlHarvester extends Harvester {
     private static final String REQUEST_UNAUTHORIZED = "Unauthorized";
     
     private String apiKey;
-    private boolean isMetadataCollected = false;
-    private Iterator<JSONObject> itemMetadataIterator = null;
-    private Set<JSONObject> itemMetadataSet = new HashSet<>();
     private List<Object> listOfItemsToDownload = new ArrayList<>();
+    private Iterator<Object> itemListIterator = null;
     
     public BhlHarvester(Configuration configuration)
     		throws UnsetHarvesterBaseDirectoryException {
@@ -295,32 +293,35 @@ public class BhlHarvester extends Harvester {
     
     @Override
     protected boolean nextItem(Item item) {
-    	if (!isMetadataCollected) {
-    		logger.info("Calling API for all requested metadata...");
+    	if (itemListIterator == null) {
+    		logger.info("Starting BHL download...");
+    		itemListIterator = listOfItemsToDownload.iterator();
+    	}
+    	
+    	while (itemListIterator.hasNext()) {
+    		Object itemObj = itemListIterator.next();
+    		long itemId = Long.parseLong(itemObj.toString());
+    		
+    		logger.info("Processing item ID " + itemId);
     		
     		try {
-    			getMetadataOfAllRequestedItems();
-    		} catch (AuthenticationException ex) {
-    			logger.severe(ex.getMessage());
-    			return false;
-    		}
-    		
-    		logger.info("Metadata collection complete!");
-    		isMetadataCollected = true;
-    		itemMetadataIterator = itemMetadataSet.iterator();
-    		
-    		logger.info("Starting to process items...");
+				JSONObject itemMetadata = getItemMetadata(itemId);
+				logger.fine("Received metadata!");
+				logger.finer("Metadata Set: " + itemMetadata.toString(2));
+				
+				addMetadataToItem(item, itemMetadata);
+				return true;
+				
+			} catch (ItemDoesNotExistException ex) {
+				logger.warning("The requested item (ID " + itemId + ") does not exist!");
+			} catch (AuthenticationException ex) {
+				logger.severe("The given API key is invalid!");
+				return false;
+			}
     	}
     	
-    	if (itemMetadataIterator.hasNext()) {
-    		JSONObject itemMetadata = itemMetadataIterator.next();
-    		addMetadataToItem(item, itemMetadata);
-    	} else {
-    		logger.info("Processing items complete!");
-    		return false;
-    	}
-    	
-    	return true;
+    	logger.info("Processing items complete!");
+		return false;
     }
     
     private void addMetadataToItem(Item item, JSONObject itemMetadata) {
@@ -352,20 +353,6 @@ public class BhlHarvester extends Harvester {
     		throws AuthenticationException, ItemDoesNotExistException {
     	JSONArray resultArray = getApiResultArray(apiResponse);
     	return (JSONObject) resultArray.get(0);
-    }
-    
-    private void getMetadataOfAllRequestedItems() throws AuthenticationException {
-    	for (Object obj : listOfItemsToDownload) {
-			long itemId = Long.parseLong(obj.toString());
-			try {
-				JSONObject itemMetadata = getItemMetadata(itemId);
-				logger.fine("Received metadata!");
-				logger.finer("Metadata Set: " + itemMetadata.toString(2));
-				itemMetadataSet.add(itemMetadata);
-			} catch (ItemDoesNotExistException ex) {
-				logger.warning("The requested item (ID " + itemId + ") does not exist!");
-			}
-		}
     }
     
     private void handleWebbException(WebbException ex) throws AuthenticationException {

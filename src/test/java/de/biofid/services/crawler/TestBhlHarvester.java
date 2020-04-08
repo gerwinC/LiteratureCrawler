@@ -25,6 +25,7 @@ public class TestBhlHarvester {
 	private File testDirectory = null;
 	
 	private static final String ITEM_ARRAY = "items";
+	private static final String TITLE_ARRAY = "titles";
 	
 	@Test
 	public void testGetAllCollections() throws IOException {
@@ -182,6 +183,7 @@ public class TestBhlHarvester {
 		// Read Harvester configuration from config file and dump all items and collections
 		configurator.readConfigurationYamlFile(configurationFilePathString);
 		configurator.removeKeyFromConfiguration(BhlHarvester.BHL_STRING, ITEM_ARRAY);
+		configurator.removeKeyFromConfiguration(BhlHarvester.BHL_STRING, TITLE_ARRAY);
 		
 		return configurator;
 	}

@@ -8,7 +8,11 @@ Given a configuration file `config/harvesting.yml`, the crawler downloads all de
 The project needs Java 8 and Maven 3.6+ (at least this is what it was build and tested with).
 
 ### Building
-To build the project simply call `mvn package`.
+To build the project simply call `mvn package`. This should give you a file `target/LiteratureCrawler.jar`. This you can run simply with 
+
+`java -jar target/LiteratureCrawler.jar`
+
+and the application will run.
 
 ### Testing
 To run all unit tests on a UNIX machine call `mvn test`.

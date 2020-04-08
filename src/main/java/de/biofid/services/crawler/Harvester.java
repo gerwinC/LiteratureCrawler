@@ -32,6 +32,7 @@ public abstract class Harvester {
 
 	// Logging for all sub-classes
 	protected Logger logger = Logger.getLogger(this.getClass().getName());
+	private static final String LOGGER_FILE = "harvester.log";
 		
 	/***
 	 * Subclasses HAVE TO have a constructor that takes a Configuration object as the only parameter!
@@ -186,9 +187,10 @@ public abstract class Harvester {
 		
         FileHandler fileTxt;
 		try {
-			Path loggerOutputDirectoryPath = Paths.get(LiteratureHarvester.LOGGER_OUTPUT_FILE);
-			createDirectoryIfNotExisting(loggerOutputDirectoryPath.getParent());
-			fileTxt = new FileHandler(LiteratureHarvester.LOGGER_OUTPUT_FILE);
+			Path loggerOutputDirectoryPath = Paths.get(
+					LiteratureHarvester.LOGGER_OUTPUT_DIRECTORY_STRING + LOGGER_FILE);
+			createDirectoryIfNotExisting(loggerOutputDirectoryPath);
+			fileTxt = new FileHandler(LiteratureHarvester.LOGGER_OUTPUT_DIRECTORY_STRING);
 		} catch (SecurityException | IOException e) {
 			logger.warning(Arrays.toString(e.getStackTrace()));
 			return;

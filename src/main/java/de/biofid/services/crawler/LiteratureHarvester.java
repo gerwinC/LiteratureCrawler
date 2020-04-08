@@ -22,8 +22,9 @@ import java.util.logging.SimpleFormatter;
 public class LiteratureHarvester {
 	
 	public static final String CONFIGURATION_FILE_PATH_STRING = "config/harvesting.yml";
-	public static final String LOGGER_OUTPUT_FILE = "logs/harvesting.log";
+	public static final String LOGGER_OUTPUT_DIRECTORY_STRING = "logs/";
 	
+	private static final String LOGGER_FILE_STRING = "main.log";
 	private static final Logger logger = Logger.getLogger(LiteratureHarvester.class.getName());
 	private Level loggerLevel = Level.INFO;
 	
@@ -94,13 +95,13 @@ public class LiteratureHarvester {
 		
 		FileHandler fileTxt;
 		try {
-			Path loggerOutputParentDirectoryPath = Paths.get(LiteratureHarvester.LOGGER_OUTPUT_FILE).getParent();
-			File loggerOutputParentDirectory = loggerOutputParentDirectoryPath.toFile();
-			if (!loggerOutputParentDirectory.exists()) {
-				loggerOutputParentDirectory.mkdirs();
+			Path loggerOutputDirectoryPath = Paths.get(LiteratureHarvester.LOGGER_OUTPUT_DIRECTORY_STRING);
+			File loggerOutputDirectory = loggerOutputDirectoryPath.toFile();
+			if (!loggerOutputDirectory.exists()) {
+				loggerOutputDirectory.mkdirs();
 			}
 			
-			fileTxt = new FileHandler(LiteratureHarvester.LOGGER_OUTPUT_FILE);
+			fileTxt = new FileHandler(LiteratureHarvester.LOGGER_OUTPUT_DIRECTORY_STRING + LiteratureHarvester.LOGGER_FILE_STRING);
 		} catch (SecurityException | IOException e) {
 			logger.warning(Arrays.toString(e.getStackTrace()));
 			return;
