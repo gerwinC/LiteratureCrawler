@@ -14,12 +14,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.XML;
@@ -55,9 +53,7 @@ public class Item {
 	
 	public static final int JSON_N_SPACES_FOR_INDENTATION = 2;
 	
-	private static final Logger logger = Logger.getLogger(Item.class.getName());
-	private static final Level LOGGER_LEVEL = Level.FINE;
-	private static final String LOGGER_FILE = "io.log";
+	private static final Logger logger = LogManager.getLogger(LiteratureHarvester.LOGGER_NAME);
 		
 	private long itemID = -1;
 	private String dataSource = "";
@@ -66,10 +62,6 @@ public class Item {
 	private ArrayList<FileType> textFileTypes = new ArrayList<>();
 	private JSONObject itemMetadata = new JSONObject();
 	private HashSet<String> createdTextFiles = new HashSet<>();
-	
-	public Item () {
-		setupLogger();
-	}
 
 	/***
 	 * Add a new key with an object to the metadata.
@@ -107,7 +99,7 @@ public class Item {
 		try {
 			url = new URL(sUrl);
 		} catch (MalformedURLException ex) {
-			logger.warning(ex.getMessage());
+			logger.error(ex.getMessage());
 			return;
 		}
 		
@@ -139,7 +131,7 @@ public class Item {
 		try {
 			url = new URL(sUrl);
 		} catch (MalformedURLException ex) {
-			logger.warning(ex.getMessage());
+			logger.error(ex.getMessage());
 			return;
 		}
 		setItemUrl(url);
@@ -294,39 +286,18 @@ public class Item {
 					fileChannel.close();
 				}
 			} catch (IOException ex) {
-				logger.warning(Arrays.toString(ex.getStackTrace()));
+				logger.error(Arrays.toString(ex.getStackTrace()));
 			}
 		}
 		
 		return nBytesTransfered > 0;
 	}
 	
-	private void setupLogger() {		
-		logger.setLevel(LOGGER_LEVEL);
-		
-		Path loggerOutputDirectoryPath = Paths.get(LiteratureHarvester.LOGGER_OUTPUT_DIRECTORY_STRING);
-		createDirectoryIfNotExisting(loggerOutputDirectoryPath);
-		
-        FileHandler fileTxt;
-		try {
-			fileTxt = new FileHandler(
-					LiteratureHarvester.LOGGER_OUTPUT_DIRECTORY_STRING + LOGGER_FILE);
-		} catch (SecurityException | IOException e) {
-			logger.warning(Arrays.toString(e.getStackTrace()));
-			return;
-		}
-
-        // create a TXT formatter
-        SimpleFormatter formatterTxt = new SimpleFormatter();
-        fileTxt.setFormatter(formatterTxt);
-        logger.addHandler(fileTxt);
-	}
-	
 	private void writeStringToFile(Path filePath, String content) {
 		try {
 			Files.write(filePath, content.getBytes());
 		} catch (IOException ex) {
-			logger.warning(Arrays.toString(ex.getStackTrace()));
+			logger.error(Arrays.toString(ex.getStackTrace()));
 		}
 	}
 	

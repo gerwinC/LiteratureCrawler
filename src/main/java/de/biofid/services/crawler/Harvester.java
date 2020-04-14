@@ -5,10 +5,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
+
+import org.apache.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.biofid.services.crawler.Item.DownloadFailedException;
 import de.biofid.services.crawler.Item.UnsupportedOutputFormatException;
@@ -23,16 +23,14 @@ import de.biofid.services.crawler.Item.UnsupportedOutputFormatException;
  * @version 1.0
  */
 public abstract class Harvester {
-	
-	protected static Level loggerLevel = Level.FINER;
+
 	private static String baseOutputDirectory = null;
 	
 	protected Configuration configuration;
 	protected long millisecondsDelayBetweenRequests = 0;
 
 	// Logging for all sub-classes
-	protected Logger logger = Logger.getLogger(this.getClass().getName());
-	private static final String LOGGER_FILE = "harvester.log";
+	protected Logger logger = LogManager.getLogger(LiteratureHarvester.LOGGER_NAME);
 		
 	/***
 	 * Subclasses HAVE TO have a constructor that takes a Configuration object as the only parameter!
@@ -45,14 +43,8 @@ public abstract class Harvester {
 		}
 		
 		this.configuration = configuration;
-		
-		setupLogger();
 	}
-	
-	public static void setLoggerLevel(Level loggerLevel) {
-		Harvester.loggerLevel = loggerLevel;
-	}
-	
+
 	/***
 	 * Set the directory where to write all downloaded data.
 	 */
@@ -73,7 +65,7 @@ public abstract class Harvester {
 			createWorkingDirectory();
 			createOutputDirectory();
 		} catch (IOException e) {
-			logger.severe("Could not create working directories for '" + this.getClass().getName() + "'!");
+			logger.fatal("Could not create working directories for '" + this.getClass().getName() + "'!");
 			return;
 		}
 		
@@ -125,7 +117,7 @@ public abstract class Harvester {
 		try {
 			Thread.sleep(millisecondsDelayBetweenRequests);
 		} catch (InterruptedException ex) {
-			logger.warning(ex.getMessage());
+			logger.error(ex.getMessage());
 		}
 	}
 	
@@ -168,39 +160,19 @@ public abstract class Harvester {
 		try {
 			item.writeTextFiles(outputPathString, overwriteExistingFiles);
 		} catch (DownloadFailedException ex) {
-			logger.warning("The download of a text file from item ID " + item.getItemId() + " failed!");
-			logger.warning(Arrays.toString(ex.getStackTrace()));
+			logger.error("The download of a text file from item ID " + item.getItemId() + " failed!");
+			logger.error(Arrays.toString(ex.getStackTrace()));
 		}
 		
 		try {
 			item.writeMetadataFile(outputPathString, Item.FileType.XML);
 		} catch (UnsupportedOutputFormatException ex) {
-			logger.warning("Writing of the metadata of item ID " + item.getItemId() + " failed!");
-			logger.warning(Arrays.toString(ex.getStackTrace()));
+			logger.error("Writing of the metadata of item ID " + item.getItemId() + " failed!");
+			logger.error(Arrays.toString(ex.getStackTrace()));
 		}
 		
 		return true;
 	}
-	
-	private void setupLogger() {		
-		logger.setLevel(loggerLevel);
-		
-        FileHandler fileTxt;
-		try {
-			Path loggerOutputDirectoryPath = Paths.get(
-					LiteratureHarvester.LOGGER_OUTPUT_DIRECTORY_STRING + LOGGER_FILE);
-			createDirectoryIfNotExisting(loggerOutputDirectoryPath);
-			fileTxt = new FileHandler(LiteratureHarvester.LOGGER_OUTPUT_DIRECTORY_STRING);
-		} catch (SecurityException | IOException e) {
-			logger.warning(Arrays.toString(e.getStackTrace()));
-			return;
-		}
-
-        // create a TXT formatter
-        fileTxt.setFormatter(new SimpleFormatter());
-        logger.addHandler(fileTxt);    
-	}
-	
 	
 	class CouldNotCreateDirectoryException extends IOException {
 		private static final long serialVersionUID = -8144628595804556669L;

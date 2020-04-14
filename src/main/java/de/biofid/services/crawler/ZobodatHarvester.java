@@ -114,7 +114,7 @@ public class ZobodatHarvester extends Harvester {
 		}
 		
 		if (sumOfAllItemsReferencedFromThisSite == 0) {
-			logger.fine("Is article list!");
+			logger.debug("Is article list!");
 			itemMetadataList.addAll(extractItemMetadataFromArticleList(itemList));
 		}
 	}
@@ -151,14 +151,14 @@ public class ZobodatHarvester extends Harvester {
 		try {
 			metdataJSONString = mapper.writeValueAsString(itemMetadata);
 		} catch (JsonProcessingException e) {
-			logger.warning("Could not create metadata JSON from item " + item.getItemId());
+			logger.error("Could not create metadata JSON from item " + item.getItemId());
 			return;
 		}
 		
 		JSONObject itemMetadataJSON = new JSONObject(metdataJSONString);
 		
 		long itemID = Long.parseLong(itemMetadataJSON.remove("id").toString());
-    	logger.fine("Processing Item ID " + itemID);
+    	logger.debug("Processing Item ID " + itemID);
 		item.setDataSource(ZOBODAT_STRING);
 		item.setItemId(itemID);
 		item.addTextFileUrl((String) itemMetadataJSON.remove("pdfUrl"), Item.FileType.PDF);
@@ -178,7 +178,7 @@ public class ZobodatHarvester extends Harvester {
 		try {
 			website = getDocumentFromUrl(url);
 		} catch (IOException ex) {
-			logger.warning("Could not fetch URL " + url);
+			logger.error("Could not fetch URL " + url);
 			return 0;
 		}
 		
@@ -228,9 +228,9 @@ public class ZobodatHarvester extends Harvester {
 			Document citationSite = getDocumentFromUrl(url.toString());
 			Element citationContainer = citationSite.selectFirst(SELECTOR_CITATION_CONTAINER);
 			citation = new Citation(citationContainer);
-			logger.finer("Generated citation: " + citation.toString());
+			logger.debug("Generated citation: " + citation.toString());
 		} catch (IOException e) {
-			logger.warning("Could not collect citation site: " + url.toString());
+			logger.error("Could not collect citation site: " + url.toString());
 			citation = null;
 		}
 		
@@ -245,9 +245,9 @@ public class ZobodatHarvester extends Harvester {
 		URL citationUrl;
 		try {
 			citationUrl = new URL(citationUrlString);
-			logger.fine("Found citation URL: " + citationUrlString);
+			logger.debug("Found citation URL: " + citationUrlString);
 		} catch (MalformedURLException e) {
-			logger.warning("Malformed Citation URL: " + citationUrlString);
+			logger.error("Malformed Citation URL: " + citationUrlString);
 			citationUrl = null;
 		}
 		
@@ -273,9 +273,9 @@ public class ZobodatHarvester extends Harvester {
 			URL pdfUrl;
 			try {
 				pdfUrl = new URL(pdfUrlString);
-				logger.fine("Found PDF URL: " + pdfUrlString);
+				logger.debug("Found PDF URL: " + pdfUrlString);
 			} catch (MalformedURLException e) {
-				logger.warning("Malformed PDF URL: " + pdfUrlString);
+				logger.error("Malformed PDF URL: " + pdfUrlString);
 				pdfUrl = null;
 			}
 			
@@ -291,7 +291,7 @@ public class ZobodatHarvester extends Harvester {
 			String jsonStringOfList = mapper.writeValueAsString(obj);
 			return new JSONArray(jsonStringOfList);
 		} catch (JsonProcessingException ex) {
-			logger.warning("Could not convert item metadata list to JSON!");
+			logger.error("Could not convert item metadata list to JSON!");
 		}
 		
 		return null;

@@ -93,9 +93,9 @@ public class BhlHarvester extends Harvester {
     			try {
 					itemsExtractedFromTitle.addAll(getItemsFromTitle(titleID));
 				} catch (ItemDoesNotExistException ex) {
-					logger.warning("The given Title ID " + titleID + " could not be found!");
+					logger.error("The given Title ID " + titleID + " could not be found!");
 				} catch (AuthenticationException ex) {
-					logger.severe(ex.getLocalizedMessage());
+					logger.fatal(ex.getLocalizedMessage());
 				}
     		}
     		listOfItemsToDownload.addAll(itemsExtractedFromTitle);
@@ -158,7 +158,7 @@ public class BhlHarvester extends Harvester {
      */
     public JSONObject getItemMetadata(long itemID, boolean wantsPages, boolean wantsOcr, boolean wantsParts) 
     		throws AuthenticationException, ItemDoesNotExistException {
-    	logger.fine("Calling for metadata for Item ID " + itemID);
+    	logger.debug("Calling for metadata for Item ID " + itemID);
     	
     	Map<String, Object> params = new HashMap<>();
     	params.put(API_KEY, apiKey);
@@ -306,16 +306,16 @@ public class BhlHarvester extends Harvester {
     		
     		try {
 				JSONObject itemMetadata = getItemMetadata(itemId);
-				logger.fine("Received metadata!");
-				logger.finer("Metadata Set: " + itemMetadata.toString(2));
+				logger.debug("Received metadata!");
+				logger.debug("Metadata Set: " + itemMetadata.toString(2));
 				
 				addMetadataToItem(item, itemMetadata);
 				return true;
 				
 			} catch (ItemDoesNotExistException ex) {
-				logger.warning("The requested item (ID " + itemId + ") does not exist!");
+				logger.error("The requested item (ID " + itemId + ") does not exist!");
 			} catch (AuthenticationException ex) {
-				logger.severe("The given API key is invalid!");
+				logger.fatal("The given API key is invalid!");
 				return false;
 			}
     	}
@@ -326,7 +326,7 @@ public class BhlHarvester extends Harvester {
     
     private void addMetadataToItem(Item item, JSONObject itemMetadata) {
     	long itemID = itemMetadata.getLong(ITEM_ID);
-    	logger.fine("Processing Item ID " + itemID);
+    	logger.debug("Processing Item ID " + itemID);
 		item.setDataSource(BHL_STRING);
 		item.setItemId(itemID);
 		item.addTextFileUrl(itemMetadata.getString(ITEM_PDF_URL), Item.FileType.PDF);
