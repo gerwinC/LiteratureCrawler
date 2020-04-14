@@ -15,7 +15,7 @@
             </Policies>
         </RollingFile>
  
-        <Console name="console" target="SYSTEM_OUT" level="info">
+        <Console name="console" target="SYSTEM_OUT">
             <PatternLayout   pattern="[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n" />
         </Console>
     </Appenders>
@@ -24,7 +24,7 @@
             <appender-ref ref="fileLogger" level="debug" />
         </Logger>
         <Root level="all" additivity="false">
-            <appender-ref ref="console"/>
+            <appender-ref ref="console" level="info"/>
             <appender-ref ref="fileLogger" />
         </Root>
     </Loggers>
