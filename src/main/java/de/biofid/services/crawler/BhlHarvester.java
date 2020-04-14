@@ -220,7 +220,7 @@ public class BhlHarvester extends Harvester {
 
                     for (int i = 0; i < rArray.length(); i++) {
                         JSONObject tObject = rArray.getJSONObject(i);
-                        rMap.put(tObject.getLong("ItemID"), tObject.getString("Title"));
+                        rMap.put(tObject.getLong(ITEM_ID), tObject.getString("Title"));
                     }
                 }
                 ++currentPage;

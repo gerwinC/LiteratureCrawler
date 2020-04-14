@@ -14,6 +14,7 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.auth.AuthenticationException;
 import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Test;
 
 import de.biofid.services.crawler.BhlHarvester.ItemDoesNotExistException;
@@ -66,22 +67,18 @@ public class TestBhlHarvester {
 		BhlHarvester bhlHarvester = new BhlHarvester(
 				configurator.getConfigurationForHarvesterName(BhlHarvester.BHL_STRING));
 		
-		try {
-			bhlHarvester.run();
-			
-			Path expectedTextDirectory = Paths.get(TEST_OUTPUT_DIRECTORY_STRING + "/bhl/text");
-			Path expectedMetadataDirectory = Paths.get(TEST_OUTPUT_DIRECTORY_STRING + "/bhl/metadata");
-			
-			Path expectedMetadataFilePath = expectedMetadataDirectory.resolve(Long.toString(itemID) + ".xml");
-			Path expectedPdfFilePath = expectedTextDirectory.resolve(Long.toString(itemID) + ".pdf");
-			Path expectedTxtFilePath = expectedTextDirectory.resolve(Long.toString(itemID) + ".txt");
-			
-			assertTrue(expectedPdfFilePath.toFile().exists());
-			assertTrue(expectedMetadataFilePath.toFile().exists());
-			assertTrue(expectedTxtFilePath.toFile().exists());
-		} finally {
-			cleanAfterTest();
-		}
+		bhlHarvester.run();
+		
+		Path expectedTextDirectory = Paths.get(TEST_OUTPUT_DIRECTORY_STRING + "/bhl/text");
+		Path expectedMetadataDirectory = Paths.get(TEST_OUTPUT_DIRECTORY_STRING + "/bhl/metadata");
+		
+		Path expectedMetadataFilePath = expectedMetadataDirectory.resolve(Long.toString(itemID) + ".xml");
+		Path expectedPdfFilePath = expectedTextDirectory.resolve(Long.toString(itemID) + ".pdf");
+		Path expectedTxtFilePath = expectedTextDirectory.resolve(Long.toString(itemID) + ".txt");
+		
+		assertTrue(expectedPdfFilePath.toFile().exists());
+		assertTrue(expectedMetadataFilePath.toFile().exists());
+		assertTrue(expectedTxtFilePath.toFile().exists());
 	}
 	
 	@Test
@@ -96,25 +93,21 @@ public class TestBhlHarvester {
 		BhlHarvester bhlHarvester = new BhlHarvester(
 				configurator.getConfigurationForHarvesterName(BhlHarvester.BHL_STRING));
 		
-		try {
-			bhlHarvester.run();
-		
-			Path expectedTextDirectory = Paths.get(TEST_OUTPUT_DIRECTORY_STRING + "/bhl/text");
-			Path expectedMetadataDirectory = Paths.get(TEST_OUTPUT_DIRECTORY_STRING + "/bhl/metadata");
-		
-		
-		
-			for (long itemID : itemIDArray) {
-				Path expectedMetadataFilePath = expectedMetadataDirectory.resolve(Long.toString(itemID) + ".xml");
-				Path expectedPdfFilePath = expectedTextDirectory.resolve(Long.toString(itemID) + ".pdf");
-				Path expectedTxtFilePath = expectedTextDirectory.resolve(Long.toString(itemID) + ".txt");
-				
-				assertTrue(expectedPdfFilePath.toFile().exists());
-				assertTrue(expectedMetadataFilePath.toFile().exists());
-				assertTrue(expectedTxtFilePath.toFile().exists());
-			}
-		} finally {
-			cleanAfterTest();
+		bhlHarvester.run();
+	
+		Path expectedTextDirectory = Paths.get(TEST_OUTPUT_DIRECTORY_STRING + "/bhl/text");
+		Path expectedMetadataDirectory = Paths.get(TEST_OUTPUT_DIRECTORY_STRING + "/bhl/metadata");
+	
+	
+	
+		for (long itemID : itemIDArray) {
+			Path expectedMetadataFilePath = expectedMetadataDirectory.resolve(Long.toString(itemID) + ".xml");
+			Path expectedPdfFilePath = expectedTextDirectory.resolve(Long.toString(itemID) + ".pdf");
+			Path expectedTxtFilePath = expectedTextDirectory.resolve(Long.toString(itemID) + ".txt");
+			
+			assertTrue(expectedPdfFilePath.toFile().exists());
+			assertTrue(expectedMetadataFilePath.toFile().exists());
+			assertTrue(expectedTxtFilePath.toFile().exists());
 		}
 	}
 	
@@ -195,7 +188,8 @@ public class TestBhlHarvester {
 		return getConfigurator();
 	}
 	
-	private void cleanAfterTest() throws IOException {
+	@After
+	public void cleanAfterTest() throws IOException {
 		if (!didTestDirectoryExistBeforeTest && testDirectory.exists()) {
 			FileUtils.deleteDirectory(testDirectory);
 		}

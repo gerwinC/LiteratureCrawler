@@ -13,6 +13,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.junit.After;
 import org.junit.Test;
 
 public class TestZobodatHarvester {
@@ -127,17 +128,13 @@ public class TestZobodatHarvester {
 		
 		configurator.addItemToArray(ZobodatHarvester.ZOBODAT_STRING, ITEM_ARRAY, startingUrl);
 		
-		try {
-			ZobodatHarvester zobodatHarvester = new ZobodatHarvester(
-					configurator.getConfigurationForHarvesterName(ZobodatHarvester.ZOBODAT_STRING));
+		ZobodatHarvester zobodatHarvester = new ZobodatHarvester(
+				configurator.getConfigurationForHarvesterName(ZobodatHarvester.ZOBODAT_STRING));
+	
+		zobodatHarvester.run();
 		
-			zobodatHarvester.run();
-			
-			assertTrue(createdFiles[0].exists());
-			assertTrue(createdFiles[1].exists());
-		} finally {
-			cleanAfterTest();
-		}
+		assertTrue(createdFiles[0].exists());
+		assertTrue(createdFiles[1].exists());
 	}
 	
 	private void areAllMetadataFieldsSerialized(JSONObject item) {
@@ -152,7 +149,8 @@ public class TestZobodatHarvester {
 		assertTrue(itemCitation.has(CITATION_JOURNAL_NAME));
 	}
 	
-	private void cleanAfterTest() throws IOException {
+	@After
+	public void cleanAfterTest() throws IOException {
 		if (!didTestDirectoryExistBeforeTest && testDirectory.exists()) {
 			FileUtils.deleteDirectory(testDirectory);
 		}
