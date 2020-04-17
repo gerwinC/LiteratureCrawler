@@ -9,9 +9,14 @@ import java.util.Arrays;
 import org.apache.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.biofid.services.crawler.Item.DownloadFailedException;
 import de.biofid.services.crawler.Item.UnsupportedOutputFormatException;
+import net.bytebuddy.asm.Advice.This;
 
 /***
  * A Harvester crawls the data of some website and draws the literature items from it.
@@ -24,6 +29,8 @@ import de.biofid.services.crawler.Item.UnsupportedOutputFormatException;
  */
 public abstract class Harvester {
 
+	protected static final String ITEM_COMPLETE_METADATA = "Item";
+	
 	private static String baseOutputDirectory = null;
 	
 	protected Configuration configuration;
@@ -65,7 +72,7 @@ public abstract class Harvester {
 			createWorkingDirectory();
 			createOutputDirectory();
 		} catch (IOException e) {
-			logger.fatal("Could not create working directories for '" + this.getClass().getName() + "'!");
+			logger.fatal("Could not create working directories for '{}'!", this.getClass().getName());
 			return;
 		}
 		
@@ -77,6 +84,7 @@ public abstract class Harvester {
 			if (next) {
 				processItem(item);
 			} else {
+				logger.info("All items of Harvester {} processed!", this.getClass().getName());
 				break;
 			}
 		}
@@ -119,6 +127,12 @@ public abstract class Harvester {
 		} catch (InterruptedException ex) {
 			logger.error(ex.getMessage());
 		}
+	}
+	
+	protected JSONObject toJsonObject(Object obj) throws JsonProcessingException {
+		ObjectMapper mapper = new ObjectMapper();
+		String metdataJSONString = mapper.writeValueAsString(obj);
+		return new JSONObject(metdataJSONString);
 	}
 	
 	private boolean createDirectoryIfNotExisting(Path pathToCreate) {
