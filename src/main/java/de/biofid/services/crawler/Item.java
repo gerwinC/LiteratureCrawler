@@ -44,7 +44,7 @@ public class Item {
 	public static String METADATA_OUTPUT_FOLDER_NAME = "metadata";
 	
 	public static String METADATA_ROOT_NAME = "Metadata";
-	public static String METADATA_ITEM_ID_STRING = "ID";
+	public static String METADATA_ITEM_ID_STRING = "itemID";
 	public static String METADATA_URL_STRING = "Url";
 	public static String METADATA_ITEM_TEXT_URLS_PARENT_STRING = "TextUrls";
 	public static String METADATA_ITEM_TEXT_URL_STRING = "TextUrl";
@@ -115,8 +115,37 @@ public class Item {
 		return this.itemID;
 	}
 	
+	public void digestItemData(Item other) {
+		this.itemID = other.getItemId();
+		this.itemUrl = other.getUrl();
+		this.dataSource = other.getDataSource();
+		this.textFileTypes = other.getTextFileTypes();
+		this.textFileUrls = other.getTextFileUrls();
+		this.itemMetadata = other.getItemMetadata();
+	}
+	
 	public void setDataSource(String dataSource) {
 		this.dataSource = dataSource;
+	}
+	
+	public String getDataSource() {
+		return dataSource;
+	}
+	
+	public URL getUrl() {
+		return itemUrl;
+	}
+	
+	public ArrayList<URL> getTextFileUrls() {
+		return textFileUrls;
+	}
+	
+	public ArrayList<FileType> getTextFileTypes() {
+		return textFileTypes;
+	}
+	
+	public JSONObject getItemMetadata() {
+		return itemMetadata;
 	}
 	
 	/***

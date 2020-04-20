@@ -13,8 +13,6 @@ General:
    # Delay between requests to an API in milliseconds; Default: 0
    request-delay: 100
    
-   # Levels of logging: INFO, FINE, FINER
-   logging-level: INFO
 
 # Configure additional Harvesters below after implementing them.
 # Every Harvester needs to have a unique name. Also, it needs to provide a "class", so

@@ -1,23 +1,10 @@
 package de.biofid.services.crawler;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -35,11 +22,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
  */
 public class BibDigitalHarvester extends Harvester {
 	public static final String BIB_DIGITAL_HARVESTER = "bib-digital-madrid";
+	public static final String BIBDIGITAL_BOTANICAL_GARDEN_MADRID_STRING = "Bibdigital Real Jardin Botanico";
 	
 	private static final String ATTRIBUTE_HREF = "href";
 	
 	private static final String BIB_DIGITAL_BASE_URL = "https://bibdigital.rjb.csic.es";
-	private static final String BOTANICAL_GARDEN_MADRID_STRING = "Real Jardín Botánico";
 	
 	private static final String CLASS_DOWNLOADABLE_FILES_STRING = "attachedfiles";
 	private static final String CLASS_KEY_STRING = "key";
@@ -48,14 +35,15 @@ public class BibDigitalHarvester extends Harvester {
 	private static final String FULL_PDF_STRING = "Full PDF";
 	
 	private static final String ITEM_URL_SUFFIX_STRING = "-redirection";
-	private static final String ITEM_URL_TEMPATE = BIB_DIGITAL_BASE_URL + "/en/records/item/";
+	private static final String ITEM_URL_TEMPLATE = BIB_DIGITAL_BASE_URL + "/en/records/item/";
 	
 	private static final String METADATA_AUTHOR_KEY = "Author";
 	private static final String METADATA_PUBLICATION_DATE = "Date";
-	private static final String METADATA_TITLE_KEY = "Title comp";
+	private static final String METADATA_TITLE_CONTAINER_ID = "single";
 	
 	private static final String TAG_NAME_CONTAINING_METADATA = "tr";
 	private static final String TAG_NAME_LIST_ELEMENT = "li";
+	private static final String TAG_NAME_H1 = "h1";
 	
 	private List<Object> listOfItemsToDownload = new ArrayList<>();
 	private Iterator<Object> itemIterator = null;
@@ -75,8 +63,7 @@ public class BibDigitalHarvester extends Harvester {
 	}
 	
 	public Document getDocumentFromUrl(String url) throws IOException {
-		String urlHtmlContent = openSSLConnection(new URL(url));
-		return Jsoup.parse(urlHtmlContent);
+		return Jsoup.connect(url).get();
 	}
 
 	@Override
@@ -103,7 +90,6 @@ public class BibDigitalHarvester extends Harvester {
 				addMetadataToItem(item, metadata);
 				return true;
 			} catch (IOException ex) {
-				ex.printStackTrace();
 				logger.warn("An error happend while processing item ID {}\n{} ", itemId, ex.getLocalizedMessage());
 			}
 		}
@@ -115,25 +101,25 @@ public class BibDigitalHarvester extends Harvester {
     	long itemID = itemMetadata.getItemID();
     	logger.debug("Processing Item ID {}", itemID);
     	
-		item.setDataSource(BOTANICAL_GARDEN_MADRID_STRING);
-		item.setItemId(itemID);
+		item.setDataSource(BIBDIGITAL_BOTANICAL_GARDEN_MADRID_STRING);
 		item.addTextFileUrl(itemMetadata.getPdfURL().toString(), Item.FileType.PDF);
+		item.setItemId(itemID);
 	
 		try {
 			item.addMetdata(ITEM_COMPLETE_METADATA, toJsonObject(itemMetadata));
-		} catch (JsonProcessingException e) {
-			logger.warn("Could not write metadata for item ID {}", itemID);
+		} catch (JsonProcessingException ex) {
+			logger.warn("Could not write metadata for item ID {}\n{}", itemID, ex.getLocalizedMessage());
 		}
     }
 	
 	private String constructItemUrlString(long itemId) {
-		return ITEM_URL_TEMPATE + itemId + ITEM_URL_SUFFIX_STRING;
+		return ITEM_URL_TEMPLATE + itemId + ITEM_URL_SUFFIX_STRING;
 	}
 	
 	private Metadata extractItemMetadataFromHtmlDocument(long itemId, Document itemHtmlDocument) 
 			throws IOException {
 		Elements metadataElements = getMetadataElementsFromHtmlDocument(itemHtmlDocument);
-		String itemTitle = extractMetadataAttributeFromMetadataElements(METADATA_TITLE_KEY, metadataElements);
+		String itemTitle = extractItemTitleFromDocument(itemHtmlDocument);
 		String itemAuthor = extractMetadataAttributeFromMetadataElements(METADATA_AUTHOR_KEY, metadataElements);
 		String itemPublicationDate = extractMetadataAttributeFromMetadataElements(
 				METADATA_PUBLICATION_DATE, metadataElements);
@@ -142,7 +128,7 @@ public class BibDigitalHarvester extends Harvester {
 		Citation citation = new BibDigitalCitation();
 		citation.setTitle(itemTitle);
 		citation.addAuthor(itemAuthor);
-		citation.setPublicationYear(Integer.parseInt(itemPublicationDate));
+		citation.setPublicationYear(itemPublicationDate);
 		
 		return new Metadata(itemId, pdfUrl, citation);
 	}
@@ -164,12 +150,17 @@ public class BibDigitalHarvester extends Harvester {
 		return null;
 	}
 	
+	private String extractItemTitleFromDocument(Document document) {
+		Element titleContainer = document.getElementById(METADATA_TITLE_CONTAINER_ID);
+		return titleContainer.getElementsByTag(TAG_NAME_H1).first().text();
+	}
+	
 	private URL extractPdfUrlFromDocument(Document document) throws IOException {
 		Element downloadableFileListNode = document.getElementsByClass(
 				CLASS_DOWNLOADABLE_FILES_STRING).first();
 		for (Element fileNode : downloadableFileListNode.getElementsByTag(TAG_NAME_LIST_ELEMENT)) {
 			if (fileNode.text().contains(FULL_PDF_STRING)) {
-				String pdfUrl = fileNode.attr(ATTRIBUTE_HREF);
+				String pdfUrl = fileNode.child(0).attr(ATTRIBUTE_HREF);
 				if (!pdfUrl.isEmpty()) {
 					return new URL(BIB_DIGITAL_BASE_URL + pdfUrl);
 				} else {
@@ -184,31 +175,16 @@ public class BibDigitalHarvester extends Harvester {
 	private Metadata getItemMetadata(long itemId) throws IOException {
 		String itemUrlString = constructItemUrlString(itemId);
 		Document itemHtmlDocument = getDocumentFromUrl(itemUrlString);
-		return extractItemMetadataFromHtmlDocument(itemId, itemHtmlDocument);
+		Metadata metadata = extractItemMetadataFromHtmlDocument(itemId, itemHtmlDocument);
+		
+		metadata.setItemUrl(itemUrlString);
+		
+		return metadata;
 	}
 	
 	private Elements getMetadataElementsFromHtmlDocument(Document document) {
 		return document.getElementsByTag(TAG_NAME_CONTAINING_METADATA);
 	}
-	
-	private String openSSLConnection(URL url) throws IOException {
-		HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-        InputStream is = conn.getInputStream();
-        InputStreamReader isr = new InputStreamReader(is);
-        BufferedReader br = new BufferedReader(isr);
-
-        String inputLine;
-        String outputString = "";
-        
-        while ((inputLine = br.readLine()) != null) {
-            outputString += inputLine;
-        }
-
-        br.close();
-        
-        return outputString;
-	}
-	
 	
 	private class BibDigitalCitation extends Citation {
 		

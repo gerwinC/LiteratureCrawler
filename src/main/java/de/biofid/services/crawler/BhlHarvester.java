@@ -3,16 +3,17 @@ package de.biofid.services.crawler;
 import static org.texttechnologylab.utilities.helper.RESTUtils.METHODS.GET;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.http.auth.AuthenticationException;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.texttechnologylab.utilities.helper.RESTUtils;
 
@@ -44,6 +45,7 @@ public class BhlHarvester extends Harvester {
     
     // BHL OAI Parameters
     // Documentation at https://www.biodiversitylibrary.org/docs/api3.html
+    private static final String EXTERNAL_URL = "ExternalUrl";
     private static final String FORMAT = "format";
     private static final String GET_COLLECTIONS = "GetCollections";
     private static final String GET_ITEM_METADATA = "GetItemMetadata";
@@ -61,6 +63,9 @@ public class BhlHarvester extends Harvester {
     private static final String PAGE = "page";
     private static final String PAGES = "pages";
     private static final String PARTS = "parts";
+    private static final String SOURCE = "Source";
+    
+    
     
     // API Result Tags
     private static final String REQUEST_OK = "ok";
@@ -158,7 +163,7 @@ public class BhlHarvester extends Harvester {
      */
     public JSONObject getItemMetadata(long itemID, boolean wantsPages, boolean wantsOcr, boolean wantsParts) 
     		throws AuthenticationException, ItemDoesNotExistException {
-    	logger.debug("Calling for metadata for Item ID " + itemID);
+    	logger.debug("Calling for metadata for Item ID {}", itemID);
     	
     	Map<String, Object> params = new HashMap<>();
     	params.put(API_KEY, apiKey);
@@ -247,7 +252,7 @@ public class BhlHarvester extends Harvester {
     		throws AuthenticationException, ItemDoesNotExistException {
     	Map<String, Object> params = new HashMap<>(0);
     	
-    	logger.info("Resolving items of title ID " + titleID);
+    	logger.info("Resolving items of title ID {}", titleID);
 
         params.put(API_KEY, apiKey);
         params.put(FORMAT, JSON_FORMAT);
@@ -276,7 +281,7 @@ public class BhlHarvester extends Harvester {
     		handleWebbException(ex);
     	}
         
-        logger.info("Found " + itemsOfTitleList.size() + " items for this title!");
+        logger.info("Found {} items for this title!", itemsOfTitleList.size());
         
         return itemsOfTitleList;
 
@@ -302,18 +307,29 @@ public class BhlHarvester extends Harvester {
     		Object itemObj = itemListIterator.next();
     		long itemId = Long.parseLong(itemObj.toString());
     		
-    		logger.info("Processing item ID " + itemId);
+    		logger.info("Processing item ID {}", itemId);
     		
     		try {
 				JSONObject itemMetadata = getItemMetadata(itemId);
 				logger.debug("Received metadata!");
-				logger.debug("Metadata Set: " + itemMetadata.toString(2));
+				logger.debug("Metadata Set: {}", itemMetadata.toString(2));
 				
-				addMetadataToItem(item, itemMetadata);
+				if (isReferencingExternalResource(itemMetadata)) {
+					String externalResourceNameString = getExternalResourceNameString(itemMetadata);
+					logger.info("Is external resource from {} .", externalResourceNameString);
+					
+					item.digestItemData(processExternalResource(itemMetadata, externalResourceNameString));
+					
+					// Item ID has to be the BHL ID, not an external!
+					item.setItemId(itemId);
+				} else {
+					addMetadataToItem(item, itemMetadata);
+				}
+				
 				return true;
 				
 			} catch (ItemDoesNotExistException ex) {
-				logger.error("The requested item (ID " + itemId + ") does not exist!");
+				logger.error("The requested item (ID {}) does not exist!", itemId);
 			} catch (AuthenticationException ex) {
 				logger.fatal("The given API key is invalid!");
 				return false;
@@ -326,7 +342,7 @@ public class BhlHarvester extends Harvester {
     
     private void addMetadataToItem(Item item, JSONObject itemMetadata) {
     	long itemID = itemMetadata.getLong(ITEM_ID);
-    	logger.debug("Processing Item ID " + itemID);
+    	logger.debug("Processing Item ID {}", itemID);
 		item.setDataSource(BHL_STRING);
 		item.setItemId(itemID);
 		item.addTextFileUrl(itemMetadata.getString(ITEM_PDF_URL), Item.FileType.PDF);
@@ -353,6 +369,53 @@ public class BhlHarvester extends Harvester {
     		throws AuthenticationException, ItemDoesNotExistException {
     	JSONArray resultArray = getApiResultArray(apiResponse);
     	return (JSONObject) resultArray.get(0);
+    }
+    
+    private Item processExternalResource(JSONObject itemMetadata, String externalResourceName) {  
+    	Configuration configuration = getDefaultHarvesterConfiguration();
+    	try {
+	    	if (externalResourceName.contains(BibDigitalHarvester.BIBDIGITAL_BOTANICAL_GARDEN_MADRID_STRING)) {
+    			logger.debug("Creating harvester for BibDigital Madrid...");
+				BibDigitalHarvester harvester = new BibDigitalHarvester(configuration);
+				URL itemUrl = new URL(itemMetadata.getString(EXTERNAL_URL));
+				
+				logger.debug("Adding URL {} to harvest...", itemUrl);
+				harvester.addItemToCollect(itemUrl);
+				
+				Item externalItem = new Item();
+				if (harvester.nextItem(externalItem)) {
+					logger.debug("Created valid item!");
+					return externalItem;
+				} else {
+					logger.debug("Could not create valid item!");
+					return null;
+				}
+	    	}
+    	} catch (UnsetHarvesterBaseDirectoryException ex) {
+			// does not happen
+		} catch (MalformedURLException|JSONException ex) {
+			logger.warn("Could not create URL for external resource!");
+		}	
+    	
+    	return null;
+    }
+    
+    private Configuration getDefaultHarvesterConfiguration() {
+    	return new Configuration("", "", new JSONObject());
+    }
+    
+    private boolean isReferencingExternalResource(JSONObject itemMetadata) {
+    	String itemSource = getExternalResourceNameString(itemMetadata);
+    	if (itemSource.contains(BibDigitalHarvester.BIBDIGITAL_BOTANICAL_GARDEN_MADRID_STRING)) {
+    		return true;
+    	}
+    	// add further harvesters here with else if
+    	
+    	return false;
+    }
+    
+    private String getExternalResourceNameString(JSONObject itemMetadata) {
+    	return itemMetadata.getString(SOURCE);
     }
     
     private void handleWebbException(WebbException ex) throws AuthenticationException {

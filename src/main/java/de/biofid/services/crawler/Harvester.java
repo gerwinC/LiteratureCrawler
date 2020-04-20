@@ -174,15 +174,17 @@ public abstract class Harvester {
 		try {
 			item.writeTextFiles(outputPathString, overwriteExistingFiles);
 		} catch (DownloadFailedException ex) {
-			logger.error("The download of a text file from item ID " + item.getItemId() + " failed!");
-			logger.error(Arrays.toString(ex.getStackTrace()));
+			logger.error("The download of a text file from item ID {} failed!", item.getItemId());
+			logger.error(ex.getLocalizedMessage());
+			return false;
 		}
 		
 		try {
 			item.writeMetadataFile(outputPathString, Item.FileType.XML);
 		} catch (UnsupportedOutputFormatException ex) {
-			logger.error("Writing of the metadata of item ID " + item.getItemId() + " failed!");
+			logger.error("Writing of the metadata of item ID {} failed!", item.getItemId());
 			logger.error(Arrays.toString(ex.getStackTrace()));
+			return false;
 		}
 		
 		return true;

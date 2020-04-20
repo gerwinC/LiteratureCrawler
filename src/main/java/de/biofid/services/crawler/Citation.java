@@ -2,6 +2,8 @@ package de.biofid.services.crawler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.json.JSONObject;
 
@@ -15,6 +17,8 @@ import org.json.JSONObject;
  * @version 1.0
  */
 public abstract class Citation {
+	private final static Pattern pattern = Pattern.compile("^[0-9]{4}");
+	
 	private List<String> authors = new ArrayList<>();
 	private String firstPage = ""; // No Integer, because page numbers can also be roman!
 	private String issueNumber = "";
@@ -75,6 +79,14 @@ public abstract class Citation {
 	
 	public void setPublicationYear(int year) {
 		this.year = year;
+	}
+	
+	public void setPublicationYear(String year) {
+		Matcher matcher = pattern.matcher(year);
+		if (matcher.find())
+		{
+			this.year = Integer.parseInt(matcher.group());
+		}
 	}
 	
 	public void setTitle(String title) {

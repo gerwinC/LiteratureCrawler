@@ -85,7 +85,7 @@ public class LiteratureHarvester {
 
 	private void logSevereError(String msg, Exception ex) {
 		logger.fatal(msg);
-		logger.fatal("Received error message: " + ex.getMessage());
+		logger.fatal("Received error message: {} ", ex.getLocalizedMessage());
 		logger.fatal(Arrays.toString(ex.getStackTrace()));
 	}
 }

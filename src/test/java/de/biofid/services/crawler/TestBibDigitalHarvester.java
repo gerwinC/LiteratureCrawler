@@ -35,11 +35,16 @@ public class TestBibDigitalHarvester {
 	@Test
 	public void testSingleItemDownload() throws UnsetHarvesterBaseDirectoryException, MalformedURLException {
 		BibDigitalHarvester harvester = new BibDigitalHarvester(defaultConfiguration);
-		harvester.addItemToCollect(new URL("https://bibdigital.rjb.csic.es/idurl/1/11833"));
+		harvester.addItemToCollect(new URL("https://bibdigital.rjb.csic.es/idurl/1/15729"));
 		harvester.run();
 		
-		File outputFile = Paths.get(TEST_OUTPUT_DIRECTORY_STRING + harvester.getFolderName() + "11833.pdf").toFile();
-		assertTrue(outputFile.exists());
+		File outputTextFile = Paths.get(TEST_OUTPUT_DIRECTORY_STRING + "/" + harvester.getFolderName() + 
+				"text/15729.pdf").toFile();
+		File outputMetadataFile = Paths.get(TEST_OUTPUT_DIRECTORY_STRING + "/" + harvester.getFolderName() + 
+				"metadata/15729.pdf").toFile();
+		
+		assertTrue(outputTextFile.exists());
+		assertTrue(outputMetadataFile.exists());
 	}
 	
 	@Before

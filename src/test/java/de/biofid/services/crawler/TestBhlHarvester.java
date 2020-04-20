@@ -130,6 +130,29 @@ public class TestBhlHarvester {
 	}
 	
 	@Test
+	public void testExternalResourceAccess() throws IOException {
+		DummyConfigurator configurator = setup();
+		
+		long itemID = 147893;
+		configurator.addItemToArray(BhlHarvester.BHL_STRING, ITEM_ARRAY, itemID);
+		
+		Harvester.setOutputDirectory(TEST_OUTPUT_DIRECTORY_STRING);
+		BhlHarvester bhlHarvester = new BhlHarvester(
+				configurator.getConfigurationForHarvesterName(BhlHarvester.BHL_STRING));
+		
+		bhlHarvester.run();
+		
+		Path expectedTextDirectory = Paths.get(TEST_OUTPUT_DIRECTORY_STRING + "/bhl/text");
+		Path expectedMetadataDirectory = Paths.get(TEST_OUTPUT_DIRECTORY_STRING + "/bhl/metadata");
+		
+		Path expectedMetadataFilePath = expectedMetadataDirectory.resolve(Long.toString(itemID) + ".xml");
+		Path expectedPdfFilePath = expectedTextDirectory.resolve(Long.toString(itemID) + ".pdf");
+		
+		assertTrue(expectedPdfFilePath.toFile().exists());
+		assertTrue(expectedMetadataFilePath.toFile().exists());
+	}
+	
+	@Test
 	public void testHarvestCollections() throws Exception {
 		DummyConfigurator configurator = setup();
 		
