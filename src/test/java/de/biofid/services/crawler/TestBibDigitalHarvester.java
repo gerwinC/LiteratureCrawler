@@ -29,8 +29,6 @@ public class TestBibDigitalHarvester {
 	
 	private boolean didTestDirectoryExistBeforeTest = true;
 	private Configuration defaultConfiguration = null;
-	
-	
 
 	@Test
 	public void testSingleItemDownload() throws UnsetHarvesterBaseDirectoryException, MalformedURLException {
@@ -39,9 +37,9 @@ public class TestBibDigitalHarvester {
 		harvester.run();
 		
 		File outputTextFile = Paths.get(TEST_OUTPUT_DIRECTORY_STRING + "/" + harvester.getFolderName() + 
-				"text/15729.pdf").toFile();
+				"/text/15729.pdf").toFile();
 		File outputMetadataFile = Paths.get(TEST_OUTPUT_DIRECTORY_STRING + "/" + harvester.getFolderName() + 
-				"metadata/15729.pdf").toFile();
+				"/metadata/15729.xml").toFile();
 		
 		assertTrue(outputTextFile.exists());
 		assertTrue(outputMetadataFile.exists());
