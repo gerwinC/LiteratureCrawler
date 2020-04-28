@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -98,8 +99,6 @@ public class TestBhlHarvester {
 		Path expectedTextDirectory = Paths.get(TEST_OUTPUT_DIRECTORY_STRING + "/bhl/text");
 		Path expectedMetadataDirectory = Paths.get(TEST_OUTPUT_DIRECTORY_STRING + "/bhl/metadata");
 	
-	
-	
 		for (long itemID : itemIDArray) {
 			Path expectedMetadataFilePath = expectedMetadataDirectory.resolve(Long.toString(itemID) + ".xml");
 			Path expectedPdfFilePath = expectedTextDirectory.resolve(Long.toString(itemID) + ".pdf");
@@ -109,6 +108,20 @@ public class TestBhlHarvester {
 			assertTrue(expectedMetadataFilePath.toFile().exists());
 			assertTrue(expectedTxtFilePath.toFile().exists());
 		}
+	}
+	
+	@Test
+	public void testLoadingTitleListFromFile() throws IOException {
+		DummyConfigurator configurator = setup();
+		
+		String dummyFilePath = "src/test/resources/listOfTitles.txt";
+		configurator.addItemToArray(BhlHarvester.BHL_STRING, TITLE_ARRAY, dummyFilePath);
+		
+		Harvester.setOutputDirectory(TEST_OUTPUT_DIRECTORY_STRING);
+		BhlHarvester bhlHarvester = new BhlHarvester(
+				configurator.getConfigurationForHarvesterName(BhlHarvester.BHL_STRING));
+		
+		assertEquals(599, bhlHarvester.getListOfItems().size());
 	}
 	
 	@Test

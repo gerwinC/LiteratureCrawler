@@ -1,9 +1,7 @@
 package de.biofid.services.crawler;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -11,7 +9,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -142,7 +139,7 @@ public class HarvesterConfigurator {
 			return apiKey;
 		}
 		String apiKeyString = jsonConfiguration.getString(HARVESTER_API_KEY);
-    	if (isStringPathOrFile(apiKeyString)) {
+    	if (FileHandler.isStringPathOrFile(apiKeyString)) {
     		apiKey = readApiKey(apiKeyString);
     	} else {
     		apiKey = apiKeyString;
@@ -159,32 +156,8 @@ public class HarvesterConfigurator {
 		
 		return isOverWrittingEnabled;
 	}
-	
-	private boolean isStringPathOrFile(String pathOrFile) {
-        try {
-            Paths.get(pathOrFile);
-        } catch (InvalidPathException | NullPointerException ex) {
-            return false;
-        }
-        return true;
-    }
     
 	private String readApiKey(String apiSourceFile) {
-    	String apiKey = null;
-    	URI filePath = Paths.get(apiSourceFile).toUri();
-    	
-    	try {
-			File file = new File(filePath);
-			Scanner scanner = new Scanner(file);
-			
-			apiKey = scanner.nextLine();
-		
-			scanner.close();
-			
-		} catch (FileNotFoundException e) {
-			System.out.println("Could not find file " + filePath.toString());
-		}
-    	
-		return apiKey;
+		return FileHandler.getFileContent(apiSourceFile);
     }
 }

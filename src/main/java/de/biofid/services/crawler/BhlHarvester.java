@@ -65,8 +65,6 @@ public class BhlHarvester extends Harvester {
     private static final String PARTS = "parts";
     private static final String SOURCE = "Source";
     
-    
-    
     // API Result Tags
     private static final String REQUEST_OK = "ok";
     private static final String REQUEST_RESULT = "Result";
@@ -77,7 +75,7 @@ public class BhlHarvester extends Harvester {
     private List<Object> listOfItemsToDownload = new ArrayList<>();
     private Iterator<Object> itemListIterator = null;
     
-    public BhlHarvester(Configuration configuration)
+	public BhlHarvester(Configuration configuration)
     		throws UnsetHarvesterBaseDirectoryException {
     	super(configuration);
     	
@@ -86,19 +84,18 @@ public class BhlHarvester extends Harvester {
     	apiKey = configuration.getHarvesterApiKey();
     	
     	if (jsonConfiguration.has(CONFIGURATION_ITEM_LIST)) {
-    		JSONArray itemListFromConfiguration = jsonConfiguration.getJSONArray(CONFIGURATION_ITEM_LIST);
-    		listOfItemsToDownload = itemListFromConfiguration.toList();
+    		listOfItemsToDownload = getListFromJsonKey(CONFIGURATION_ITEM_LIST, jsonConfiguration);
     	}
     	
     	if (jsonConfiguration.has(CONFIGURATION_TITLE_LIST)) {
-    		JSONArray titles = jsonConfiguration.getJSONArray(CONFIGURATION_TITLE_LIST);
+    		List<Object> titles = getListFromJsonKey(CONFIGURATION_TITLE_LIST, jsonConfiguration);
     		List<Object> itemsExtractedFromTitle = new ArrayList<>();
-    		for (Object titleObj : titles.toList()) {
+    		for (Object titleObj : titles) {
     			long titleID = Long.parseLong(titleObj.toString());
     			try {
 					itemsExtractedFromTitle.addAll(getItemsFromTitle(titleID));
 				} catch (ItemDoesNotExistException ex) {
-					logger.error("The given Title ID " + titleID + " could not be found!");
+					logger.error("The given Title ID {} could not be found!", titleID);
 				} catch (AuthenticationException ex) {
 					logger.fatal(ex.getLocalizedMessage());
 				}
@@ -186,6 +183,11 @@ public class BhlHarvester extends Harvester {
     	}
     	
     	return itemJson;
+    }
+    
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	public List<Object> getListOfItems() {
+    	return new ArrayList(listOfItemsToDownload);
     }
     
     /***
@@ -424,6 +426,21 @@ public class BhlHarvester extends Harvester {
 		} else {
 			throw ex;
 		}
+    }
+    
+    @SuppressWarnings("unchecked")
+	private List<Object> getListFromJsonKey(String jsonKey, JSONObject jsonConfiguration) {
+    	if (!jsonConfiguration.has(jsonKey)) {
+    		return new ArrayList<Object>(0);
+    	}
+    	
+    	JSONArray itemArray = jsonConfiguration.getJSONArray(jsonKey);
+    	try {
+    		String firstElement = itemArray.getString(0);
+    		return (List) FileHandler.readListFromFile(firstElement);
+    	} catch (JSONException ex) {
+    		return itemArray.toList();
+    	}
     }
  
     class ItemDoesNotExistException extends IOException {
