@@ -185,11 +185,6 @@ public class BhlHarvester extends Harvester {
     	return itemJson;
     }
     
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-	public List<Object> getListOfItems() {
-    	return new ArrayList(listOfItemsToDownload);
-    }
-    
     /***
      * This is a call to https://www.biodiversitylibrary.org/api3?op=PublicationSearchAdvanced&language=GERMAN&collection=97&apikey=<KEY>&format=json
      * @param lCollectionID
@@ -289,6 +284,11 @@ public class BhlHarvester extends Harvester {
 
     }
     
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	public List<Object> getListOfItems() {
+    	return new ArrayList(listOfItemsToDownload);
+    }
+    
     public void setBhlApiKey(String apiKey) {
     	this.apiKey = apiKey;
     }
@@ -373,6 +373,47 @@ public class BhlHarvester extends Harvester {
     	return (JSONObject) resultArray.get(0);
     }
     
+    private Configuration getDefaultHarvesterConfiguration() {
+    	return new Configuration("", "", new JSONObject());
+    }
+    
+    private String getExternalResourceNameString(JSONObject itemMetadata) {
+    	return itemMetadata.getString(SOURCE);
+    }
+    
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	private List<Object> getListFromJsonKey(String jsonKey, JSONObject jsonConfiguration) {
+    	if (!jsonConfiguration.has(jsonKey)) {
+    		return new ArrayList<>(0);
+    	}
+    	
+    	JSONArray itemArray = jsonConfiguration.getJSONArray(jsonKey);
+    	try {
+    		String firstElement = itemArray.getString(0);
+    		return (List) FileHandler.readListFromFile(firstElement);
+    	} catch (JSONException ex) {
+    		return itemArray.toList();
+    	}
+    }
+    
+    private void handleWebbException(WebbException ex) throws AuthenticationException {
+    	if (ex.getMessage().contains("401 Unauthorized")) {
+			throw new AuthenticationException("The given API key is not valid! Key: " + apiKey);
+		} else {
+			throw ex;
+		}
+    }
+    
+    private boolean isReferencingExternalResource(JSONObject itemMetadata) {
+    	String itemSource = getExternalResourceNameString(itemMetadata);
+    	if (itemSource.contains(BibDigitalHarvester.BIBDIGITAL_BOTANICAL_GARDEN_MADRID_STRING)) {
+    		return true;
+    	}
+    	// add further harvesters here with else if
+    	
+    	return false;
+    }
+    
     private Item processExternalResource(JSONObject itemMetadata, String externalResourceName) {  
     	Configuration configuration = getDefaultHarvesterConfiguration();
     	try {
@@ -400,47 +441,6 @@ public class BhlHarvester extends Harvester {
 		}	
     	
     	return null;
-    }
-    
-    private Configuration getDefaultHarvesterConfiguration() {
-    	return new Configuration("", "", new JSONObject());
-    }
-    
-    private boolean isReferencingExternalResource(JSONObject itemMetadata) {
-    	String itemSource = getExternalResourceNameString(itemMetadata);
-    	if (itemSource.contains(BibDigitalHarvester.BIBDIGITAL_BOTANICAL_GARDEN_MADRID_STRING)) {
-    		return true;
-    	}
-    	// add further harvesters here with else if
-    	
-    	return false;
-    }
-    
-    private String getExternalResourceNameString(JSONObject itemMetadata) {
-    	return itemMetadata.getString(SOURCE);
-    }
-    
-    private void handleWebbException(WebbException ex) throws AuthenticationException {
-    	if (ex.getMessage().contains("401 Unauthorized")) {
-			throw new AuthenticationException("The given API key is not valid! Key: " + apiKey);
-		} else {
-			throw ex;
-		}
-    }
-    
-    @SuppressWarnings("unchecked")
-	private List<Object> getListFromJsonKey(String jsonKey, JSONObject jsonConfiguration) {
-    	if (!jsonConfiguration.has(jsonKey)) {
-    		return new ArrayList<Object>(0);
-    	}
-    	
-    	JSONArray itemArray = jsonConfiguration.getJSONArray(jsonKey);
-    	try {
-    		String firstElement = itemArray.getString(0);
-    		return (List) FileHandler.readListFromFile(firstElement);
-    	} catch (JSONException ex) {
-    		return itemArray.toList();
-    	}
     }
  
     class ItemDoesNotExistException extends IOException {

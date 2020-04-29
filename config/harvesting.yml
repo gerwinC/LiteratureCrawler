@@ -30,9 +30,18 @@ Harvesters:
      
      # Overwrites the general overwriting rule for this harvester
      overwrite: false
+     
+     # Instead of a list you can provide a file that contains the items/titles in a list with one
+     # item/title per line.
+     
+     # Single issues of e.g. a journal series.
      items:
         - 1234
         - 5678
+        
+     # Titles are collections of items. E.g. a journal series.
+     titles: path/to/some/file.txt
+     
         
 - Zobodat:
      class: de.biofid.services.crawler.ZobodatHarvester

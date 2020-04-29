@@ -2,7 +2,6 @@ package de.biofid.services.crawler;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;

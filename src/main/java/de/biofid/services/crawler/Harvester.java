@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-import org.apache.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
@@ -16,7 +15,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.biofid.services.crawler.Item.DownloadFailedException;
 import de.biofid.services.crawler.Item.UnsupportedOutputFormatException;
-import net.bytebuddy.asm.Advice.This;
 
 /***
  * A Harvester crawls the data of some website and draws the literature items from it.

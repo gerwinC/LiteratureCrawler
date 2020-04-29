@@ -33,17 +33,8 @@ public class LiteratureHarvester {
 		} catch (IOException ex) {
 			logSevereError("Configuration file error!", ex);
 		}
-	}
-	
-	public void start() {
-		Harvester.setOutputDirectory(configurator.getBaseOutputPath());
 		
-		for (Configuration harvesterConfiguration : configurator.getConfigurations()) {
-			Harvester harvester = instantiateHarvester(harvesterConfiguration);
-			if (harvester != null) {
-				harvester.run();
-			}
-		}
+		Harvester.setOutputDirectory(configurator.getBaseOutputPath());
 	}
 	
 	public static void main(String[] args) {
@@ -51,14 +42,13 @@ public class LiteratureHarvester {
 		harvester.start();
 	}
 	
-	@SuppressWarnings("unchecked")
-	private Constructor<Harvester> getHarvesterConstructorForName(String qualifiedHarvesterClassName) 
-			throws ClassNotFoundException, NoSuchMethodException{
-		Class<?> clazz = Class.forName(qualifiedHarvesterClassName);
-		return (Constructor<Harvester>) clazz.getConstructor(Configuration.class);
-	}
-	
-	private Harvester instantiateHarvester(Configuration harvesterConfiguration) {
+	/***
+	 * Returns a Harvester object with the given configuration.
+	 * This method searches for the Harvester given in the configuration and instantiates it.
+	 * @param harvesterConfiguration
+	 * @return A Harvester object for the given configuration
+	 */
+	public Harvester instantiateHarvester(Configuration harvesterConfiguration) {
 		String harvesterName = harvesterConfiguration.getHarvesterClassName();
 		Constructor<Harvester> harvesterConstructor = null;
 		try {
@@ -78,6 +68,24 @@ public class LiteratureHarvester {
 		}
 		
 		return harvester;
+	}
+	
+	public void start() {
+		Harvester.setOutputDirectory(configurator.getBaseOutputPath());
+		
+		for (Configuration harvesterConfiguration : configurator.getConfigurations()) {
+			Harvester harvester = instantiateHarvester(harvesterConfiguration);
+			if (harvester != null) {
+				harvester.run();
+			}
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	private Constructor<Harvester> getHarvesterConstructorForName(String qualifiedHarvesterClassName) 
+			throws ClassNotFoundException, NoSuchMethodException{
+		Class<?> clazz = Class.forName(qualifiedHarvesterClassName);
+		return (Constructor<Harvester>) clazz.getConstructor(Configuration.class);
 	}
 
 	private void logSevereError(String msg, Exception ex) {
