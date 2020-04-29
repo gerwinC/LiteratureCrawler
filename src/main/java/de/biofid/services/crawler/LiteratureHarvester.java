@@ -71,8 +71,6 @@ public class LiteratureHarvester {
 	}
 	
 	public void start() {
-		Harvester.setOutputDirectory(configurator.getBaseOutputPath());
-		
 		for (Configuration harvesterConfiguration : configurator.getConfigurations()) {
 			Harvester harvester = instantiateHarvester(harvesterConfiguration);
 			if (harvester != null) {

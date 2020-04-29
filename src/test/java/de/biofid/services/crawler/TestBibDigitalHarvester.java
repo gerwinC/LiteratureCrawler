@@ -22,6 +22,7 @@ public class TestBibDigitalHarvester {
 	private static final String HARVESTER_NAME = BibDigitalHarvester.BIB_DIGITAL_HARVESTER;
 	private static final String HARVESTER_CLASS_PATH = BibDigitalHarvester.class.getPackage().toString();
 	
+	@SuppressWarnings("unused")
 	private DummyConfigurator dummyConfigurator = null;
 	private File testDirectory = null;
 	

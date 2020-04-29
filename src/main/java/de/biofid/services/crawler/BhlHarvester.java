@@ -79,15 +79,22 @@ public class BhlHarvester extends Harvester {
     		throws UnsetHarvesterBaseDirectoryException {
     	super(configuration);
     	
+    	logger.info("Instantiating BHL Harvester");
+    	
     	JSONObject jsonConfiguration = configuration.getHarvesterJsonConfiguration();
     	
     	apiKey = configuration.getHarvesterApiKey();
+    	logger.info("Got API key: {}", apiKey);
     	
     	if (jsonConfiguration.has(CONFIGURATION_ITEM_LIST)) {
+    		logger.info("Loading items...");
+    		
     		listOfItemsToDownload = getListFromJsonKey(CONFIGURATION_ITEM_LIST, jsonConfiguration);
     	}
     	
     	if (jsonConfiguration.has(CONFIGURATION_TITLE_LIST)) {
+    		logger.info("Loading titles...");
+    		
     		List<Object> titles = getListFromJsonKey(CONFIGURATION_TITLE_LIST, jsonConfiguration);
     		List<Object> itemsExtractedFromTitle = new ArrayList<>();
     		for (Object titleObj : titles) {
@@ -387,13 +394,16 @@ public class BhlHarvester extends Harvester {
     		return new ArrayList<>(0);
     	}
     	
-    	JSONArray itemArray = jsonConfiguration.getJSONArray(jsonKey);
-    	try {
-    		String firstElement = itemArray.getString(0);
-    		return (List) FileHandler.readListFromFile(firstElement);
-    	} catch (JSONException ex) {
-    		return itemArray.toList();
+    	Object itemValue = jsonConfiguration.get(jsonKey);
+    	
+    	if (itemValue instanceof String) {
+    		return (List) FileHandler.readListFromFile((String) itemValue);
+    	} else if (itemValue instanceof JSONArray) {
+    		JSONArray jsonArray = (JSONArray) itemValue;
+    		return jsonArray.toList();
     	}
+    	
+    	return new ArrayList<>(0);
     }
     
     private void handleWebbException(WebbException ex) throws AuthenticationException {

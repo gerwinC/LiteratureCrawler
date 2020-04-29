@@ -44,6 +44,7 @@ public abstract class Harvester {
 	 */
 	protected Harvester (Configuration configuration) throws UnsetHarvesterBaseDirectoryException {
 		if (baseOutputDirectory == null) {
+			logger.fatal("The harvester output directory is not set!");
 			throw new UnsetHarvesterBaseDirectoryException("The base output directory has to be set!");
 		}
 		
