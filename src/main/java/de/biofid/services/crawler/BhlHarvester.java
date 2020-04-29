@@ -388,7 +388,6 @@ public class BhlHarvester extends Harvester {
     	return itemMetadata.getString(SOURCE);
     }
     
-    @SuppressWarnings({ "unchecked", "rawtypes" })
 	private List<Object> getListFromJsonKey(String jsonKey, JSONObject jsonConfiguration) {
     	if (!jsonConfiguration.has(jsonKey)) {
     		return new ArrayList<>(0);
@@ -397,13 +396,24 @@ public class BhlHarvester extends Harvester {
     	Object itemValue = jsonConfiguration.get(jsonKey);
     	
     	if (itemValue instanceof String) {
-    		return (List) FileHandler.readListFromFile((String) itemValue);
+    		return getListFromFile((String) itemValue);
     	} else if (itemValue instanceof JSONArray) {
     		JSONArray jsonArray = (JSONArray) itemValue;
-    		return jsonArray.toList();
+    		
+    		Object firstElement = jsonArray.get(0);
+    		if (firstElement instanceof String && FileHandler.isStringPathOrFile((String) firstElement)) {
+    			return getListFromFile((String) firstElement);
+    		} else {
+    			return jsonArray.toList();
+    		}
     	}
     	
     	return new ArrayList<>(0);
+    }
+    
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	private List<Object> getListFromFile(String filePath) {
+    	return (List) FileHandler.readListFromFile(filePath);
     }
     
     private void handleWebbException(WebbException ex) throws AuthenticationException {
