@@ -26,6 +26,9 @@ public abstract class Citation {
 	private int year = -1;
 	
 	public void addAuthor(String author) {
+		if (author == null) {
+			return;
+		}
 		if (!this.authors.contains(author)) {
 			author = author.trim();
 			this.authors.add(author);
@@ -33,6 +36,9 @@ public abstract class Citation {
 	}
 	
 	public void addAuthors(String[] authors) {
+		if (authors == null) {
+			return;
+		}
 		for (String author : authors) {
 			addAuthor(author);
 		}
