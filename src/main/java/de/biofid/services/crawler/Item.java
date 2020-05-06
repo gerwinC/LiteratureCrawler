@@ -21,6 +21,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.XML;
+import org.texttechnologylab.utilities.helper.FileUtils;
 
 /***
  * An item holds all metadata of a single book or monography.
@@ -324,35 +325,16 @@ public class Item {
 	}
 	
 	private boolean downloadFile(URL sourceUrl, Path sinkFilePath) throws DownloadFailedException {
-		long nBytesTransfered = 0;
-		
-		ReadableByteChannel readableByteChannel = null;
-		FileChannel fileChannel = null;
 		try {
-			readableByteChannel = Channels.newChannel(sourceUrl.openStream());
-			fileChannel = FileChannel.open(sinkFilePath, StandardOpenOption.CREATE, 
-					StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
 			logger.info("Downloading file '{}' from URL: {}", sinkFilePath, sourceUrl);
-			nBytesTransfered = fileChannel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+			FileUtils.downloadFile(sinkFilePath.toFile(), sourceUrl.toString());
 			logger.info("Download done!");
 		} catch (IOException ex) {
-			throw new DownloadFailedException("An error happened while downloading from URL '" + sourceUrl + "'.\n" +
-				"Error Message: " + ex.getMessage());
-		} finally {
-			try {
-				if (readableByteChannel != null) {
-					readableByteChannel.close();
-				}
-				
-				if (fileChannel != null) {
-					fileChannel.close();
-				}
-			} catch (IOException ex) {
-				logger.error(Arrays.toString(ex.getStackTrace()));
-			}
+			throw new DownloadFailedException("An error happened while downloading from URL '" + 
+					sourceUrl + "'.\n" + "Error Message: " + ex.getMessage());
 		}
 		
-		return nBytesTransfered > 0;
+		return true;
 	}
 	
 	private void writeStringToFile(Path filePath, String content) {
