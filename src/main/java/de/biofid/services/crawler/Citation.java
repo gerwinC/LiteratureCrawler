@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  * @version 1.0
  */
 public abstract class Citation {
-	private final static Pattern pattern = Pattern.compile("^[0-9]{4}");
+	private static final Pattern pattern = Pattern.compile("^[0-9]{4}");
 	
 	private List<String> authors = new ArrayList<>();
 	private String firstPage = ""; // No Integer, because page numbers can also be roman!

@@ -2,7 +2,7 @@
 
 This crawler was creates as part of the [BIOfid](https://www.biofid.de/en/)-project. It is primarily intended to crawl the [Biodiversity Heritage Library](https://www.biodiversitylibrary.org/) and [Zobodat](https://www.zobodat.at/index.php). However, the crawler was created to be highly extensible for any other text source.
 
-Given a configuration file `config/harvesting.yml`, the crawler downloads all demanded items (i.e. books, monographies, a journal issue) and store them locally. In the configuration file the base output directory is given. Subsequently, all harvesters create their own subdirectory and within these, they create two directories `text` and `metadata`, which store all text files and the metadata as XML, respectively.
+Given a configuration file `config/harvesting.yml`, the crawler downloads all demanded items (i.e. books, monographies, a journal issue) and store them locally. In the configuration file the base output directory is given. Subsequently, all harvesters create their own subdirectory and within these, they create two directories `text` and `metadata`, which store all text files and the metadata as XML, respectively. Different file formats are stored in different subdirectories.
 
 ## Requirements
 The project needs OpenJDK 8+ and Maven 3.6+ (at least this is what it was build and tested with). At least the harvesting of items from the Botanical Garden of Madrid (via the BHLHarvester) will not work with Oracle Java 8, because of not available cipher suites for the TLS encryption.

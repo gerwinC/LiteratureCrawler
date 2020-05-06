@@ -37,7 +37,38 @@ public class Item {
 	}
 	
 	public enum FileType {
-		PDF, TXT, XML, JSON
+		PDF {
+			@Override
+			public String getFileSuffix() {
+				return PDF.toString();
+			}
+		}, 
+		TXT {
+			@Override
+			public String getFileSuffix() {
+				return TXT.toString();
+			}
+		}, 
+		XML {
+			@Override
+			public String getFileSuffix() {
+				return XML.toString();
+			}
+		}, 
+		JSON {
+			@Override
+			public String getFileSuffix() {
+				return JSON.toString();
+			}
+		}, 
+		ABBYY {
+			@Override
+			public String getFileSuffix() {
+				return "gz";
+			}
+		};
+		
+		public abstract String getFileSuffix();
 	}
 	
 	public static String TEXT_OUTPUT_FOLDER_NAME = "text";
@@ -175,10 +206,10 @@ public class Item {
 		addObjectVariableDataToMetadata();
 		
 		Path outputPath = Paths.get(outputDirectory, METADATA_OUTPUT_FOLDER_NAME);
-		createDirectoryIfNotExisting(outputPath);
 		Path filePath = getLocaleItemFilePath(outputPath, outputFormat);
+		createDirectoryIfNotExisting(filePath.getParent());
 		
-		logger.info("Preparing to write metadata into " + filePath.toAbsolutePath().toString());
+		logger.info("Preparing to write metadata into {}", filePath.toAbsolutePath());
 		
 		String metadataOutputString = getMetadataStringForFileType(outputFormat);
 		
@@ -192,7 +223,6 @@ public class Item {
 	public List<Path> writeTextFiles(String outputDirectory, boolean overwriteExistingFiles) 
 			throws DownloadFailedException {
 		Path outputPath = Paths.get(outputDirectory, TEXT_OUTPUT_FOLDER_NAME);
-		createDirectoryIfNotExisting(outputPath);
 
 		ArrayList<Path> downloadedFiles = new ArrayList<>();
 		for (int i = 0; i < textFileUrls.toArray().length; ++i) {
@@ -201,9 +231,11 @@ public class Item {
 			Path textFilePath = getLocaleItemFilePath(outputPath, fileType);
 			
 			if (textFilePath.toFile().exists() && !overwriteExistingFiles) {
-				logger.info("File " + textFilePath.toString() + " exists already! Skipping!");
+				logger.info("File {} exists already! Skipping!", textFilePath);
 				continue;
 			}
+			
+			createDirectoryIfNotExisting(textFilePath.getParent());
 			
 			if (downloadFile(fileUrl, textFilePath)) {
 				downloadedFiles.add(textFilePath);
@@ -239,13 +271,14 @@ public class Item {
 	
 	private Path getLocaleItemFilePath(Path outputPath, FileType fileType) {
 		boolean allowDuplication = false;
+		outputPath = outputPath.resolve(fileType.toString().toLowerCase());
 		String textFileName = getItemFileNameForFiletype(fileType, allowDuplication);
 		createdTextFiles.add(textFileName);
 		return outputPath.resolve(textFileName);
 	}
 	
 	private String getItemFileNameForFiletype(FileType type, boolean allowDuplication) {
-		String fileName = itemID + "." + type.toString().toLowerCase();
+		String fileName = itemID + "." + type.getFileSuffix().toLowerCase();
 		
 		if (!allowDuplication && checkFileNameForDuplication(fileName)) {
 			fileName = deduplicateFileName(fileName);
@@ -299,7 +332,7 @@ public class Item {
 			readableByteChannel = Channels.newChannel(sourceUrl.openStream());
 			fileChannel = FileChannel.open(sinkFilePath, StandardOpenOption.CREATE, 
 					StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
-			logger.info("Downloading file '" + sinkFilePath.toString() + "' from URL: " + sourceUrl.toString());
+			logger.info("Downloading file '{}' from URL: {}", sinkFilePath, sourceUrl);
 			nBytesTransfered = fileChannel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
 			logger.info("Download done!");
 		} catch (IOException ex) {

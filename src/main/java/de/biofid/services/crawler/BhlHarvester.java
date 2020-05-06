@@ -32,8 +32,10 @@ public class BhlHarvester extends Harvester {
 	public static final String BHL_STRING = "BHL";
 
     private static final String API_KEY = "apikey";
+    private static final String ABBYY_OCR_FILE_NAME_SUFFIX = "_abbyy.gz";
     
     private static final String BHL_API_URL = "https://www.biodiversitylibrary.org/api3";
+	private static final String INTERNET_ARCHIVE_DOWNLOAD_BASE_URL_STRING = "https://archive.org/download/";
     
     private static final String COLLECTION = "collection";
     private static final String COLLECTION_DESCRIPTION = "CollectionDescription";
@@ -64,6 +66,7 @@ public class BhlHarvester extends Harvester {
     private static final String PAGES = "pages";
     private static final String PARTS = "parts";
     private static final String SOURCE = "Source";
+    private static final String SOURCE_IDENTIFIER = "SourceIdentifier";
     
     // API Result Tags
     private static final String REQUEST_OK = "ok";
@@ -356,12 +359,13 @@ public class BhlHarvester extends Harvester {
 		item.setItemId(itemID);
 		item.addTextFileUrl(itemMetadata.getString(ITEM_PDF_URL), Item.FileType.PDF);
 		item.addTextFileUrl(itemMetadata.getString(ITEM_TXT_URL), Item.FileType.TXT);
+		item.addTextFileUrl(getAbbyySourceUrl(itemMetadata), Item.FileType.ABBYY);
 		item.addMetdata(ITEM_COMPLETE_METADATA, itemMetadata);
     }
     
     private JSONArray getApiResultArray(JSONObject apiResponse) 
     		throws AuthenticationException, ItemDoesNotExistException {
-    	JSONArray jsonApiResultArray = apiResponse.getJSONArray("Result");
+    	JSONArray jsonApiResultArray = apiResponse.getJSONArray(REQUEST_RESULT);
     	
     	if (apiResponse.getString(REQUEST_STATUS).equals(REQUEST_UNAUTHORIZED)) {
     		throw new AuthenticationException("The given API key is not valid! Key: " + apiKey);
@@ -386,6 +390,12 @@ public class BhlHarvester extends Harvester {
     
     private String getExternalResourceNameString(JSONObject itemMetadata) {
     	return itemMetadata.getString(SOURCE);
+    }
+    
+    private String getAbbyySourceUrl(JSONObject itemMetadata) {
+    	String internetArchiveId = itemMetadata.getString(SOURCE_IDENTIFIER);
+    	return INTERNET_ARCHIVE_DOWNLOAD_BASE_URL_STRING + internetArchiveId + "/" + 
+    			internetArchiveId + ABBYY_OCR_FILE_NAME_SUFFIX;
     }
     
 	private List<Object> getListFromJsonKey(String jsonKey, JSONObject jsonConfiguration) {
